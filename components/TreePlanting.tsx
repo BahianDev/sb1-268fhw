@@ -41,7 +41,7 @@ export default function TreePlanting() {
   return (
     <div id="planting-section" className="py-24 bg-gradient-to-b from-white to-green-50 dark:from-black dark:to-green-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
+        {/* <div className="max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
             {currentStep === "registration" && (
               <motion.div
@@ -78,7 +78,8 @@ export default function TreePlanting() {
             )}
           </AnimatePresence>
         </div>
-        {currentStep === "marketplace" && <NFTMarketplace />}
+        {currentStep === "marketplace" && <NFTMarketplace />} */}
+        <NFTMarketplace />
       </div>
     </div>
   );
