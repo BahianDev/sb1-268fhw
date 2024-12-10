@@ -16,17 +16,15 @@ import HopeGreenAbi from "@/abi/HopeGreen.json";
 import { useAccount } from "wagmi";
 import metadata from "@/lib/metadata.json";
 import { formatWallet } from "@/lib/utils";
-
-interface NFT {
-  id: string;
-  name: string;
-  image: string;
-  location: string;
-  treeType: string;
-  owner: string;
-  price: string;
-  likes: number;
-}
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { DialogQrCode } from "../DialogQrCode";
 
 export default function NFTMarketplace() {
   const [userNFTs, setUserNFTs] = useState<any[]>([]);
@@ -38,6 +36,7 @@ export default function NFTMarketplace() {
 
   const fetchUserNFTs = useCallback(async () => {
     try {
+      const mainAddress = "0xB85e0740B2321512F95987fa20e7AC1dbdD1aC96";
       const provider = new ethers.JsonRpcProvider(rpc);
       const contract = new ethers.Contract(
         hopeGreenAddress,
@@ -45,32 +44,33 @@ export default function NFTMarketplace() {
         provider
       );
 
-      const balance = await contract.balanceOf(address);
+      const balance = await contract.balanceOf(mainAddress);
       const promises = [];
 
       for (let i = 0; i < Number(balance); i++) {
-        promises.push(contract.tokenOfOwnerByIndex(address, i));
+        promises.push(contract.tokenOfOwnerByIndex(mainAddress, i));
       }
 
       const tokenIds = await Promise.all(promises);
       const userNFTs = tokenIds.map((tokenId) => {
-        const nftData = metadata[Number(tokenId)];
+        let nftData: any = metadata[Number(tokenId)];
+        nftData.owner = mainAddress;
         return nftData || null;
       });
 
-      setUserNFTs(userNFTs.filter(Boolean)); // Remove valores nulos.
+      setUserNFTs(userNFTs.filter(Boolean));
     } catch (error) {
       console.error("Error fetching user NFTs:", error);
     }
-  }, [address, isConnected]);
+  }, [isConnected]);
 
   useEffect(() => {
     if (isConnected) {
       fetchUserNFTs();
     } else {
-      setUserNFTs([])
+      setUserNFTs([]);
     }
-  }, [address, isConnected]);
+  }, [isConnected]);
 
   return (
     <div className="py-24 bg-gradient-to-b from-green-50 to-white dark:from-green-950 dark:to-black">
@@ -119,21 +119,17 @@ export default function NFTMarketplace() {
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <p>Location: {nft.address}</p>
                   <p>Tree Type: {nft.name}</p>
-                  <p>Owner: {address && formatWallet(address as string)}</p>
+                  <p>Owner: {formatWallet(nft.owner as string)}</p>
                 </div>
               </CardContent>
-              <CardFooter className="p-6 pt-0 flex justify-between">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
+              <CardFooter className="p-6 pt-0 flex justify-between gap-4">
+                <Link
+                  target="_blank"
+                  href={`https://buy.stripe.com/8wM3ewdDQ2gt2xG6oq?prefilled_custom_field_nmeroenomedonftadquirido=nft`}
                 >
-                  <Heart className="h-4 w-4" />
-                  {nft.likes}
-                </Button>
-                <Link href="https://buy.stripe.com/aEUbL2bvI3kx7S0289">
                   <Button className="w-40 bg-[#16A349]">Buy</Button>
                 </Link>
+                <DialogQrCode />
               </CardFooter>
             </Card>
           ))}
