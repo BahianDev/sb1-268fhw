@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Leaf, TreePine } from "lucide-react";
+import { Leaf, TreePine, } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { MetamaskButton } from "./metamask/Button";
 
 export default function Hero() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function Hero() {
               <Leaf className="mr-2 h-5 w-5" />
               Start Planting
             </Button>
+            <MetamaskButton/>
             <Button size="lg" variant="outline">
               <TreePine className="mr-2 h-5 w-5" />
               View Gallery
@@ -54,10 +56,10 @@ export default function Hero() {
         </motion.div>
       </div>
       <Image
-        src="/logo-osten-green.png"
+        src="/logo.png"
         width={150}
         height={50}
-        className="absolute right-0 bottom-0"
+        className="absolute right-4 bottom-2"
         alt="logo"
       />
     </div>

@@ -8,9 +8,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TreePine, Heart, Share2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { TreePine, Heart } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { ethers } from "ethers";
+import HopeGreenAbi from "@/abi/HopeGreen.json";
+import { useAccount } from "wagmi";
+import metadata from "@/lib/metadata.json";
+import { formatWallet } from "@/lib/utils";
 
 interface NFT {
   id: string;
@@ -24,34 +29,48 @@ interface NFT {
 }
 
 export default function NFTMarketplace() {
-  const [metadata, setMetadata] = useState<any[]>([]);
+  const [userNFTs, setUserNFTs] = useState<any[]>([]);
+  const { address, isConnected } = useAccount();
 
-  const fetchMetadata = async () => {
-    const urls = Array.from(
-      { length: 91 },
-      (_, i) =>
-        `https://osten-green-nfts.s3.us-east-2.amazonaws.com/metadata/${
-          i + 1
-        }.json`
-    );
+  const hopeGreenAddress = "0xde9D88F2b0D24872f278Af1dbcE3EC4712e0Aea3";
+  const rpc =
+    "https://orbital-dry-bird.matic.quiknode.pro/a9cb4567d7f7e47a1189ffbd342cedf8944935c0/";
 
+  const fetchUserNFTs = useCallback(async () => {
     try {
-      const data = await Promise.all(
-        urls.map(async (url) => {
-          const response = await fetch(url);
-          if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-          return await response.json();
-        })
+      const provider = new ethers.JsonRpcProvider(rpc);
+      const contract = new ethers.Contract(
+        hopeGreenAddress,
+        HopeGreenAbi,
+        provider
       );
-      setMetadata(data);
+
+      const balance = await contract.balanceOf(address);
+      const promises = [];
+
+      for (let i = 0; i < Number(balance); i++) {
+        promises.push(contract.tokenOfOwnerByIndex(address, i));
+      }
+
+      const tokenIds = await Promise.all(promises);
+      const userNFTs = tokenIds.map((tokenId) => {
+        const nftData = metadata[Number(tokenId)];
+        return nftData || null;
+      });
+
+      setUserNFTs(userNFTs.filter(Boolean)); // Remove valores nulos.
     } catch (error) {
-      console.error("Error fetching metadata:", error);
+      console.error("Error fetching user NFTs:", error);
     }
-  };
+  }, [address, isConnected]);
 
   useEffect(() => {
-    fetchMetadata();
-  }, []);
+    if (isConnected) {
+      fetchUserNFTs();
+    } else {
+      setUserNFTs([])
+    }
+  }, [address, isConnected]);
 
   return (
     <div className="py-24 bg-gradient-to-b from-green-50 to-white dark:from-green-950 dark:to-black">
@@ -66,7 +85,7 @@ export default function NFTMarketplace() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {metadata.map((nft, index) => (
+          {userNFTs.map((nft, index) => (
             <Card
               key={index}
               className="overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-green-100 dark:border-green-900"
@@ -74,25 +93,23 @@ export default function NFTMarketplace() {
               <CardHeader className="p-0">
                 <div className="relative aspect-square">
                   <img
-                    src={`https://osten-green-nfts.s3.us-east-2.amazonaws.com/images/${
-                      index + 1
-                    }.jpeg`}
+                    src={nft.image}
                     alt={"image"}
                     className="object-cover w-full h-full"
                   />
                   <Badge className="absolute top-4 right-4 bg-green-600">
-                    1 eth
+                    R$ 15,35
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-semibold text-green-900 dark:text-green-100">
-                    {nft?.name}
+                    {nft.name}
                   </h3>
                   <Link
-                  target="_blank"
-                    href={`https://amoy.polygonscan.com/nft/0xaa90e8e32656cef28a3d20e7933929b39b0020ac/${
+                    target="_blank"
+                    href={`https://polygonscan.com/nft/${hopeGreenAddress}/${
                       index + 1
                     }`}
                   >
@@ -102,7 +119,7 @@ export default function NFTMarketplace() {
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <p>Location: {nft.address}</p>
                   <p>Tree Type: {nft.name}</p>
-                  <p>Owner: 0x2BA52Ae...1e2351D</p>
+                  <p>Owner: {address && formatWallet(address as string)}</p>
                 </div>
               </CardContent>
               <CardFooter className="p-6 pt-0 flex justify-between">
@@ -114,9 +131,9 @@ export default function NFTMarketplace() {
                   <Heart className="h-4 w-4" />
                   {nft.likes}
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Share2 className="h-4 w-4" />
-                </Button>
+                <Link href="https://buy.stripe.com/aEUbL2bvI3kx7S0289">
+                  <Button className="w-40 bg-[#16A349]">Buy</Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}
