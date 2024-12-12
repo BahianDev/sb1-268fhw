@@ -23,20 +23,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { DialogQrCode } from "../DialogQrCode";
 
 export default function NFTMarketplace() {
   const [userNFTs, setUserNFTs] = useState<any[]>([]);
   const { address, isConnected } = useAccount();
 
-  const hopeGreenAddress = "0xde9D88F2b0D24872f278Af1dbcE3EC4712e0Aea3";
+  const hopeGreenAddress = "0x750ab3842345a32d258379543665b73A53304479";
   const rpc =
     "https://orbital-dry-bird.matic.quiknode.pro/a9cb4567d7f7e47a1189ffbd342cedf8944935c0/";
 
   const fetchUserNFTs = useCallback(async () => {
     try {
-      const mainAddress = "0xB85e0740B2321512F95987fa20e7AC1dbdD1aC96";
+      const mainAddress = "0xc7E81911fb5ABBe995221c0B4B7238f4C9e10dE0";
       const provider = new ethers.JsonRpcProvider(rpc);
       const contract = new ethers.Contract(
         hopeGreenAddress,
@@ -45,20 +45,25 @@ export default function NFTMarketplace() {
       );
 
       const balance = await contract.balanceOf(mainAddress);
-      const promises = [];
 
-      for (let i = 0; i < Number(balance); i++) {
-        promises.push(contract.tokenOfOwnerByIndex(mainAddress, i));
+      for (let i = 0; i < balance; i++) {
+        try {
+          const token = await contract.tokenOfOwnerByIndex(mainAddress, i);
+          const tokenId = Number(token);
+
+          // Obter dados do NFT
+          const nftData: any = metadata[tokenId];
+          if (nftData) {
+            nftData.owner = mainAddress;
+
+            // Atualizar estado incrementalmente
+            setUserNFTs((prevNFTs) => [...prevNFTs, nftData]);
+          }
+          console.log("Token ID fetched:", tokenId);
+        } catch (error) {
+          console.error("Error fetching token ID for index", i, ":", error);
+        }
       }
-
-      const tokenIds = await Promise.all(promises);
-      const userNFTs = tokenIds.map((tokenId) => {
-        let nftData: any = metadata[Number(tokenId)];
-        nftData.owner = mainAddress;
-        return nftData || null;
-      });
-
-      setUserNFTs(userNFTs.filter(Boolean));
     } catch (error) {
       console.error("Error fetching user NFTs:", error);
     }
