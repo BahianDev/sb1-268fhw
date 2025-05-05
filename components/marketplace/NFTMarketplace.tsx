@@ -32,7 +32,7 @@ export default function NFTMarketplace() {
 
   const hopeGreenAddress = "0x750ab3842345a32d258379543665b73A53304479";
   const rpc =
-    "https://orbital-dry-bird.matic.quiknode.pro/a9cb4567d7f7e47a1189ffbd342cedf8944935c0/";
+    "https://polygon-mainnet.core.chainstack.com/f974e108ae568d5a0454713b4ae483e7";
 
   const fetchUserNFTs = useCallback(async () => {
     try {
