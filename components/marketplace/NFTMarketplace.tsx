@@ -70,11 +70,7 @@ export default function NFTMarketplace() {
   }, [isConnected]);
 
   useEffect(() => {
-    if (isConnected) {
-      fetchUserNFTs();
-    } else {
-      setUserNFTs([]);
-    }
+    fetchUserNFTs();
   }, [isConnected]);
 
   return (
