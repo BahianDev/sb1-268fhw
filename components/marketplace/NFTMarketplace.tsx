@@ -99,7 +99,7 @@ export default function NFTMarketplace() {
                     className="object-cover w-full h-full"
                   />
                   <Badge className="absolute top-4 right-4 bg-green-600">
-                    R$ 15,35
+                    R$ 19,00
                   </Badge>
                 </div>
               </CardHeader>
@@ -126,7 +126,7 @@ export default function NFTMarketplace() {
               <CardFooter className="p-6 pt-0 flex justify-between gap-4">
                 <Link
                   target="_blank"
-                  href={`https://buy.stripe.com/8wM3ewdDQ2gt2xG6oq?prefilled_custom_field_nmeroenomedonftadquirido=nft`}
+                  href={`https://buy.stripe.com/aEU8yQ2Zc9IVa08aEI`}
                 >
                   <Button className="w-40 bg-[#16A349]">Buy</Button>
                 </Link>
